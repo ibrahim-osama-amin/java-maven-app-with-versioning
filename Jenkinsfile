@@ -13,17 +13,17 @@ pipeline {
                     sh 'mvn build-helper:parse-version versions:set \
                         -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} \
                         versions:commit'
-                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
-                    def version = matcher[0][1]
-                    env.IMAGE_NAME = "$version-$BUILD_NUMBER"
-                }
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>' //reading the new version value from pom.xml 
+                    def version = matcher[0][1] //access the first child element and the first file in it (parsing xml files)
+                    env.IMAGE_NAME = "$version-$BUILD_NUMBER" //build number environment variable from jenkins
+                } //notice also the way to handle variables inside the shell script \\\${parsedVersion.majorVersion}
             }
         }
         stage('build app') {
             steps {
                 script {
                     echo "building the application..."
-                    sh 'mvn clean package'
+                    sh 'mvn clean package' //to delete the old jar file before creating the new file
                 }
             }
         }
@@ -49,11 +49,10 @@ pipeline {
         stage('commit version update') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'gitlab-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'github-credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
                         // git config here for the first time run
-                        sh 'git config --global user.email "jenkins@example.com"'
+                        sh 'git config --global user.email "iosama.amin@gmail.com"'
                         sh 'git config --global user.name "jenkins"'
-
                         sh "git remote set-url origin https://${USER}:${PASS}@github.com/ibrahim-osama-amin/java-maven-app-with-versioning.git"
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
