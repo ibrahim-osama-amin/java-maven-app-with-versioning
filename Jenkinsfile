@@ -57,7 +57,7 @@ pipeline {
                         sh "git remote set-url origin https://${PASS}@github.com/ibrahim-osama-amin/java-maven-app-with-versioning.git"
                         sh 'git add .'
                         sh 'git commit -m "CI: version bump"'
-                        sh 'git push main'
+                        sh 'git push origin HEAD:main'
                     }
                 }
             }
